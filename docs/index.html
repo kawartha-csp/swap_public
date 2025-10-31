@@ -1,1 +1,167 @@
-This is the landing page for https://kawartha-csp.github.io/. From here you can get to: 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawartha CSP Landing Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4; /* Light grey background */
+            color: #333333; /* Dark grey/black text */
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto; /* Centers the container box on the page */
+            padding: 30px 40px;
+            background-color: #ffffff; /* White content box */
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            text-align: left; /* Left-align text inside the container */
+        }
+        .logo-container {
+            text-align: center; /* Center the logo */
+            margin-bottom: 25px;
+        }
+        img.logo {
+            max-width: 250px;
+            height: auto;
+        }
+        h2 {
+            color: #000000; /* Black heading */
+            border-bottom: 2px solid #f4f4f4;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .links-list {
+            list-style: none;
+            padding: 0;
+            margin: 0; /* Remove default margin */
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center; /* center buttons so same-width buttons align */
+        }
+        .links-list li {
+            margin: 0; /* gap handles spacing */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .button-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #d52b1e; /* Ski Patrol Red */
+            color: #ffffff; /* White text */
+            padding: 12px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            font-size: 1.1em;
+            width: 240px; /* fixed width so buttons are identical */
+            box-sizing: border-box;
+            text-align: center; /* Center text within the button */
+        }
+        .button-link:hover {
+            background-color: #b02218; /* Darker red on hover */
+        }
+
+        /* Responsive: make buttons full width on small screens */
+        @media (max-width: 480px) {
+            .links-list {
+                align-items: stretch;
+            }
+            .links-list li {
+                justify-content: stretch;
+            }
+            .button-link {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        /* --- New Styles for Side-by-Side Layout --- */
+        .content-wrapper {
+            display: flex;
+            align-items: center; /* Vertically center the items */
+            gap: 30px; /* Space between links and QR code */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            margin-top: 25px;
+        }
+        
+        .links-column {
+            flex: 1; /* Allows the links column to grow */
+            min-width: 220px; /* Ensures buttons don't get too squished */
+        }
+
+        .qr-column {
+            flex-shrink: 0; /* Prevents the QR column from shrinking */
+            text-align: center;
+            margin: 0 auto; /* Helps center the column if it wraps */
+        }
+        
+        .qr-column img {
+            max-width: 150px; /* Made QR code smaller */
+            height: auto;
+            display: block;
+        }
+        
+        .qr-caption {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="logo-container">
+            <img src="https://www.skipatrol.ca/wp-content/uploads/2018/10/CSP-Logo-EN-Color-RGB-300dpi.png" 
+                 alt="Canadian Ski Patrol Logo" class="logo">
+        </div>
+        
+        <h2>Welcome to the Kawartha Zone!</h2>
+        
+        <p>
+            Visit us at the main site:
+            <a href="https://www.skipatrol.ca/kawartha/" class="main-site-link">https://www.skipatrol.ca/kawartha/</a>.  
+        </p>
+        
+        <p>This is the landing page for <a href="https://kawartha-csp.github.io/" class="main-site-link">https://kawartha-csp.github.io/</a>.</p>
+        
+        <p>This is a helper site dedicated to the Kawartha Swap.</p> 
+
+        <div class="content-wrapper">
+            
+            <div class="links-column">
+                <ul class="links-list">
+                    <li>
+                        <a href="https://kawartha-csp.github.io/swap_public/publicReport.pdf" class="button-link">View Public Report (PDF)</a>
+                    </li>
+                    <li>
+                        <a href="https://kawartha-csp.github.io/swap_public/qr_registration.html" class="button-link">QR Registration</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="qr-column">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?color=A7192E&amp;bgcolor=FFFFFF&amp;data=https%3A%2F%2Fkawartha-csp.github.io%2Fswap_public%2Findex.html&amp;qzone=1&amp;margin=0&amp;size=300x300&amp;ecc=L" alt="qr code" />
+                <p class="qr-caption">Link to us using this QR code</p>
+            </div>
+
+        </div> 
+    </div> 
+</body>
+</html>
