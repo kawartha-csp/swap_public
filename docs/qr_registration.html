@@ -71,6 +71,97 @@
         .muted { color:#666; font-size:13px; }
         /* Small responsive tweaks */
         @media (max-width:600px) { .row { flex-direction: column; } }
+
+        /* Make table scrollable on narrow viewports as fallback */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+        .table-responsive table { min-width: 100%; width: 100%; border-collapse: collapse; box-sizing: border-box; }
+
+        /* Alternating row colours */
+        .table-responsive tbody tr {
+            transition: background-color 180ms ease;
+        }
+        .table-responsive tbody tr:nth-child(odd) {
+            background-color: #d9ebfb; /* white for odd rows */
+        }
+        .table-responsive tbody tr:nth-child(even) {
+            background-color: #f8fbfd; /* very light blue tint for even rows */
+        }
+
+        /* Ensure rows expand to fill wrapper on stacked (mobile) layout */
+        /* Mobile: stack each row as a compact card and show labels */
+        @media (max-width:720px) {
+            /* allow CSS to fully control layout (overrides inline style) */
+            .table-responsive table { table-layout: auto !important; display: block; width: 100%; }
+            /* hide col/colgroup which otherwise force column widths */
+            .table-responsive colgroup,
+            .table-responsive col { display: none !important; }
+            /* ensure tbody is block-level so rows can be full-width */
+            .table-responsive tbody { display: block; width: 100%; box-sizing: border-box; }
+
+            thead { display: none; }
+            /* make each row a flex column so it stretches to wrapper width */
+            tbody tr {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch; /* ensure children stretch */
+                width: 100%;
+                border: 1px solid #eee;
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 6px;
+                background: transparent; /* allow alternating colours to show */
+                box-sizing: border-box;
+            }
+            tbody tr td { display: block; border: none; padding: 6px 0; width: 100%; box-sizing: border-box; }
+
+            /* Add readable labels before each cell using nth-child */
+            tbody tr td:nth-child(1)::before { content: "Item Type"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(2)::before { content: "Item Name"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(3)::before { content: "Size"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(4)::before { content: "Price"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(5)::before { content: "Extra Notes"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            /* Make inputs expand to full width for easy tapping */
+            tbody tr td input, tbody tr td select, tbody tr td textarea {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 10px 8px; /* larger touch target */
+                font-size: 16px;   /* easier to read and tap */
+            }
+            /* keep compact size inputs a bit larger but full width on mobile */
+            .size-input, .price-input {
+                width: 100%;
+                max-width: none;
+                padding: 10px 8px;
+                font-size: 16px;
+            }
+        }
+
+        /* Caption: span all columns on wide screens, be full-width block on small screens */
+        .table-responsive caption {
+            /* let the browser treat it as a real table caption so it spans columns */
+            display: table-caption;
+            caption-side: top;
+            text-align: left;
+            padding: 8px 12px;
+            color: #666;
+            font-size: 13px;
+            white-space: normal;
+            word-break: break-word;
+            box-sizing: border-box;
+            width: auto; /* allow caption to match table width/columns */
+        }
+
+        /* Mobile: when table is forced to block layout, make caption a full-width block above rows */
+        @media (max-width:720px) {
+            .table-responsive caption {
+                display: block;
+                width: 100%;
+                margin-bottom: 8px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -112,15 +203,17 @@ Please note api.qrserver.com is a service offered for free by goQR.me
 
         <fieldset>
             <legend>Items (rows)</legend>
-            <table aria-describedby="items-desc" style="table-layout: fixed;">
+            <div class="table-responsive">
+            <table aria-describedby="items-desc">
+                <caption id="items-desc" class="muted">Add items below. Use + Add Items to append more rows.</caption>
                 <colgroup>
                         <col style="width:12%"> <!-- Item Type -->
-                        <col style="width:40%"> <!-- Item Name wider -->
-                        <col style="width:8%">  <!-- Size narrower -->
-                        <col style="width:8%"> <!-- Price -->
-                        <col style="width:32%"> <!-- Extra Notes wider -->
+                        <col style="width:48%"> <!-- Item Name (wider) -->
+                        <col style="width:8%">  <!-- Size -->
+                        <col style="width:10%"> <!-- Price -->
+                        <col style="width:22%"> <!-- Extra Notes -->
                 </colgroup>
-                <caption id="items-desc" class="muted">Add items below. Use + Add Items to append more rows.</caption>
+                
                 <thead>
                     <tr>
                         <th scope="col">Item Type</th>
@@ -131,7 +224,7 @@ Please note api.qrserver.com is a service offered for free by goQR.me
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- start with six blank rows -->
+                    <!-- start with three blank rows -->
                     <tr>
                         <td><select name="item1_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
                         <td><input type="text" name="item1_name" class="data-field"></td>
@@ -153,29 +246,9 @@ Please note api.qrserver.com is a service offered for free by goQR.me
                         <td><input type="number" name="item3_price" step="0.01" min="0" class="data-field price-input"></td>
                         <td><input type="text" name="item3_extraNotes" class="data-field"></td>
                     </tr>
-                    <tr>
-                        <td><select name="item4_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
-                        <td><input type="text" name="item4_name" class="data-field"></td>
-                        <td><input type="number" name="item4_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
-                        <td><input type="number" name="item4_price" step="0.01" min="0" class="data-field price-input"></td>
-                        <td><input type="text" name="item4_extraNotes" class="data-field"></td>
-                    </tr>
-                    <tr>
-                        <td><select name="item5_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
-                        <td><input type="text" name="item5_name" class="data-field"></td>
-                        <td><input type="number" name="item5_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
-                        <td><input type="number" name="item5_price" step="0.01" min="0" class="data-field price-input"></td>
-                        <td><input type="text" name="item5_extraNotes" class="data-field"></td>
-                    </tr>
-                    <tr>
-                        <td><select name="item6_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
-                        <td><input type="text" name="item6_name" class="data-field"></td>
-                        <td><input type="number" name="item6_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
-                        <td><input type="number" name="item6_price" step="0.01" min="0" class="data-field price-input"></td>
-                        <td><input type="text" name="item6_extraNotes" class="data-field"></td>
-                    </tr>
                 </tbody>
             </table>
+            </div>
             <div class="controls">
                 <button type="button" class="big-plus" id="add-items">+ Add Items</button>
                 <button type="submit" id="submit-btn" class="primary">Generate QR Code</button>
