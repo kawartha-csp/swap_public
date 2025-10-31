@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+   
+</head>
+<body>
+
+     <title>QR Payload Builder</title>
+    <style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color-scheme: light; }
+    body { max-width: 1200px; margin: 20px auto; padding: 12px; }
+        h1 { font-size: 20px; margin-bottom: 6px; }
+        p.lead { margin-top:0; color: #333; }
+        fieldset { border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; }
+        legend { font-weight: 600; padding: 0 6px; }
+        .row { display:flex; gap:12px; }
+        .col { flex:1; }
+        table { width: 100%; border-collapse: collapse; margin-top:8px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea {
+            width: 100%; padding: 6px; box-sizing: border-box; font-size: 14px;
+        }
+    /* compact controls for size and quantity */
+    .size-input { width: 6ch; text-align: center; }
+    .qty-input { width: 3ch; text-align: center; }
+    td input.size-input, td input.qty-input { padding: 4px; }
+    td input[type="text"] { padding-left: 6px; }
+        #qr-wrap { position: static; display: block; margin: 18px auto 0; text-align: center; clear: both; width: 100%; }
+        /* download button centered and sized to match QR box width */
+        #download-btn { display: inline-flex; margin: 0 auto 8px; height: 36px; background: #111; color: #fff; border: none; align-items:center; justify-content:center; cursor:pointer; opacity: 0.98; padding: 6px 12px; border-radius: 6px; width: 350px; max-width: 90%; box-sizing: border-box; }
+        .controls { display:flex; gap:12px; align-items:center; margin-top:10px; }
+        .big-plus { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; font-size: 16px; border-radius: 8px; border: 2px solid #007bff; background: white; color: #007bff; cursor: pointer; gap: 8px; font-weight: 600; }
+        .big-plus:hover { background: #e9f2ff; }
+        button.primary { background:#007bff; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
+        button[disabled], button[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
+    #qr-result-container { margin-top: 20px; }
+    #qr-wrap { position: static; display: block; margin-top: 18px; text-align: center; clear: both; }
+    /* Hide the img initially (show placeholder) to avoid broken-image icon */
+    #qr-result { display: none; border: 1px solid #333; padding: 6px; max-width:350px; box-sizing: border-box; }
+        /* Download button placed above the QR image in normal document flow. */
+    #download-btn { display: block; margin: 0 auto 8px; height: 36px; background: #111; color: #fff; border: none; display: flex; align-items:center; justify-content:center; cursor:pointer; opacity: 0.98; padding: 6px 12px; border-radius: 6px; }
+    #download-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+    /* Ensure QR container header/labels don't bleed behind overlay */
+    #qr-result-container h2 { margin-bottom:12px; }
+    #qr-wrap img { display:none; }
+    /* waiting placeholder (square) */
+        #qr-waiting { width:350px; height:350px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; color:#666; box-sizing:border-box; margin:6px auto 10px; }
+        #qr-result { display: none; border: 1px solid #333; padding: 6px; max-width:350px; width:350px; box-sizing: border-box; margin: 0 auto 10px; }
+    /* Input sizing: make size & qty a bit larger, price smaller */
+    .size-input { width: 7ch; }
+    .qty-input { width: 3.2ch; }
+    .price-input { width: 8ch; }
+    /* Remove native number input spinners for the compact inputs */
+    /* Chrome, Safari, Edge (WebKit/Blink) */
+    input[type="number"].size-input::-webkit-outer-spin-button,
+    input[type="number"].size-input::-webkit-inner-spin-button,
+    input[type="number"].qty-input::-webkit-outer-spin-button,
+    input[type="number"].qty-input::-webkit-inner-spin-button,
+    input[type="number"].price-input::-webkit-outer-spin-button,
+    input[type="number"].price-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    /* Firefox */
+    input[type="number"].size-input,
+    input[type="number"].qty-input,
+    input[type="number"].price-input {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    #error-message { color: red; font-weight: 600; }
+        .muted { color:#666; font-size:13px; }
+        /* Small responsive tweaks */
+        @media (max-width:600px) { .row { flex-direction: column; } }
+    </style>
+
+    <h1>QR Payload Builder</h1>
+    <p class="lead">This page generates a QR code using api.qrserver.com. There is no information stored, instead there is a request to api.qrserver.com with all the data to generate the QR Code with the embeeded data</p>
+
+    <form id="qr-form" aria-describedby="js-note">
+
+        <fieldset>
+            <legend>User Details</legend>
+            <div class="row">
+                <div class="col">
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="lastname" name="lastname" class="data-field">
+                </div>
+                <div class="col">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" name="firstname" class="data-field">
+                </div>
+            </div>
+            <div class="row" style="margin-top:8px;">
+                <div class="col">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="data-field">
+                </div>
+                <div class="col">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" class="data-field">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Items (rows)</legend>
+            <table aria-describedby="items-desc" style="table-layout: fixed;">
+                <colgroup>
+                        <col style="width:12%"> <!-- Item Type -->
+                        <col style="width:36%"> <!-- Item Name wider -->
+                        <col style="width:6%">  <!-- Size narrower -->
+                        <col style="width:8%"> <!-- Price -->
+                        <col style="width:6%">  <!-- Quantity narrower -->
+                        <col style="width:29%"> <!-- Extra Notes wider -->
+                </colgroup>
+                <caption id="items-desc" class="muted">Add items below. Use + Add Items to append more rows.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Item Type</th>
+                        <th scope="col">Item Name</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">QTY</th>
+                        <th scope="col">Extra Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- start with six blank rows -->
+                    <tr>
+                        <td><select name="item1_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item1_name" class="data-field"></td>
+                        <td><input type="number" name="item1_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item1_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item1_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item1_extraNotes" class="data-field"></td>
+                    </tr>
+                    <tr>
+                        <td><select name="item2_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item2_name" class="data-field"></td>
+                        <td><input type="number" name="item2_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item2_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item2_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item2_extraNotes" class="data-field"></td>
+                    </tr>
+                    <tr>
+                        <td><select name="item3_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item3_name" class="data-field"></td>
+                        <td><input type="number" name="item3_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item3_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item3_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item3_extraNotes" class="data-field"></td>
+                    </tr>
+                    <tr>
+                        <td><select name="item4_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item4_name" class="data-field"></td>
+                        <td><input type="number" name="item4_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item4_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item4_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item4_extraNotes" class="data-field"></td>
+                    </tr>
+                    <tr>
+                        <td><select name="item5_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item5_name" class="data-field"></td>
+                        <td><input type="number" name="item5_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item5_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item5_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item5_extraNotes" class="data-field"></td>
+                    </tr>
+                    <tr>
+                        <td><select name="item6_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item6_name" class="data-field"></td>
+                        <td><input type="number" name="item6_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="number" name="item6_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><input type="number" name="item6_quantity" min="0" class="data-field qty-input" value="1"></td>
+                        <td><input type="text" name="item6_extraNotes" class="data-field"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="controls">
+                <button type="button" class="big-plus" id="add-items">+ Add Items</button>
+                <button type="submit" id="submit-btn" class="primary">Generate QR Code</button>
+                <span class="muted" id="js-note">(JavaScript enhances this page — see the QR result below)</span>
+            </div>
+        </fieldset>
+
+
+    </form>
+
+    <div id="qr-result-container">
+        <h2>QR Code Result</h2>
+        <p id="error-message" role="status" aria-live="polite"></p>
+        <div id="qr-wrap">
+            <button type="button" id="download-btn" disabled>Download QR</button>
+            <img id="qr-result" alt="Generated QR Code">
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            // Enhance behaviour only when JS is available
+            const itemTypes = ["XC Boots","XC Poles","XC Ski"]; // simple, editable array
+            const qrForm = document.getElementById('qr-form');
+            const submitButton = document.getElementById('submit-btn');
+            const qrImage = document.getElementById('qr-result');
+            const errorMessage = document.getElementById('error-message');
+            const downloadBtn = document.getElementById('download-btn');
+            const addBtn = document.getElementById('add-items');
+
+            // Populate initial dropdowns
+            function populateAllDropdowns(root=document){
+                root.querySelectorAll('.item-type-dropdown').forEach(dd=>{
+                    if (dd.options.length > 1) return; // already populated
+                    itemTypes.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; dd.appendChild(o); });
+                });
+            }
+            populateAllDropdowns();
+
+            let itemCounter = document.querySelectorAll('table tbody tr').length;
+
+            function createItemRow(index){
+                const tr = document.createElement('tr');
+                    tr.innerHTML = `\n                    <td><select name="item${index}_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>\n                    <td><input type="text" name="item${index}_name" class="data-field"></td>\n                    <td><input type="number" name="item${index}_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>\n                    <td><input type="number" name="item${index}_price" step="0.01" min="0" class="data-field price-input"></td>\n                    <td><input type="number" name="item${index}_quantity" min="0" class="data-field qty-input" value="1"></td>\n                    <td><input type="text" name="item${index}_extraNotes" class="data-field"></td>\n                `;
+                populateAllDropdowns(tr);
+                return tr;
+            }
+
+            addBtn.addEventListener('click', function(){
+                itemCounter += 1;
+                const tbody = document.querySelector('table tbody');
+                const row = createItemRow(itemCounter);
+                tbody.appendChild(row);
+            });
+
+            qrForm.addEventListener('submit', function(ev){
+                ev.preventDefault();
+                submitButton.disabled = true; submitButton.textContent = 'Generating...';
+                errorMessage.textContent = '';
+                qrImage.style.display = 'none';
+
+                try{
+                    const inputs = qrForm.querySelectorAll('.data-field');
+                    const pairs = [];
+                    inputs.forEach(inp=>{
+                        const name = inp.name || inp.id;
+                        if (!name) return;
+                        const val = (inp.value || '').toString().trim();
+                        if (!val) return;
+                        let key = name.replace(/_type$/,'_itemType');
+                        pairs.push(encodeURIComponent(key)+'='+encodeURIComponent(val));
+                    });
+                    const dataString = pairs.join(';');
+
+                    // Encode payload for QR server
+                    const b64 = btoa(unescape(encodeURIComponent(dataString)));
+                    const finalData = encodeURIComponent(b64);
+                    const finalUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${finalData}`;
+
+                    // show waiting message while the image loads
+                    const waiting = document.getElementById('qr-waiting');
+                    if (waiting) { waiting.style.display = 'block'; }
+                    downloadBtn.disabled = true;
+                    qrImage.onload = function(){
+                            if (waiting) { waiting.style.display = 'none'; }
+                            qrImage.style.display = 'block';
+                            submitButton.disabled = false; submitButton.textContent = 'Generate QR Code';
+                            downloadBtn.disabled = false;
+                            // store the image src explicitly for download
+                            downloadBtn.dataset.src = finalUrl;
+                            downloadBtn.textContent = 'Download QR';
+                        };
+                        qrImage.onerror = function(){ if (waiting) { waiting.style.display = 'none'; } errorMessage.textContent='Could not load QR image - data may be too long or the server is unavailable.'; submitButton.disabled=false; submitButton.textContent='Generate QR Code'; downloadBtn.disabled = true; };
+
+                    qrImage.src = finalUrl;
+                }catch(err){ console.error(err); errorMessage.textContent = 'Error: '+err.message; submitButton.disabled=false; submitButton.textContent='Generate QR Code'; }
+            });
+
+            // Download
+            downloadBtn.addEventListener('click', function(){
+                // Use the displayed image's src to download the same image the user sees
+                const imgSrc = qrImage.src || downloadBtn.dataset.src;
+                if (!imgSrc) return;
+                downloadBtn.disabled = true;
+                fetch(imgSrc).then(r=>{
+                    if (!r.ok) throw new Error('Network response was not ok');
+                    return r.blob();
+                }).then(blob=>{
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'qr-code.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                }).catch(e=>{ console.error('Download failed',e); alert('Download failed: '+(e.message||e)); }).finally(()=>{ downloadBtn.disabled=false; });
+            });
+        })();
+    </script>
+
+</body>
+</html>
