@@ -67,8 +67,49 @@
         -moz-appearance: textfield;
         appearance: textfield;
     }
-    #error-message { color: red; font-weight: 600; }
+        #error-message { color: red; font-weight: 600; }
         .muted { color:#666; font-size:13px; }
+        
+        /* Required field indicators */
+        label:has(+ input[required])::after,
+        th:contains('*')::after {
+            color: red;
+        }
+        
+        /* Field validation styling without layout shift */
+        .field-validation-wrapper {
+            padding: 8px;
+            margin: 2px 0;
+            border-radius: 6px;
+            transition: box-shadow 0.2s ease;
+        }
+        
+        .field-validation-wrapper.error {
+            box-shadow: 0 0 0 2px #d32f2f;
+        }
+        
+        /* Styling for labels in error state */
+        .field-validation-wrapper.error label {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+        
+        /* Styling for inputs in error state - red background */
+        .field-validation-wrapper.error input,
+        .field-validation-wrapper.error select {
+            background-color: #ffebee;
+            border-color: #d32f2f;
+            color: #d32f2f;
+        }
+        
+        /* Fallback validation styling for table fields that can't be wrapped */
+        td input[required].touched:invalid, 
+        td select[required].touched:invalid {
+            background-color: #ffebee;
+            border-color: #d32f2f;
+            border-width: 2px;
+            color: #d32f2f;
+        }
         /* Small responsive tweaks */
         @media (max-width:600px) { .row { flex-direction: column; } }
 
@@ -115,10 +156,10 @@
             tbody tr td { display: block; border: none; padding: 6px 0; width: 100%; box-sizing: border-box; }
 
             /* Add readable labels before each cell using nth-child */
-            tbody tr td:nth-child(1)::before { content: "Item Type"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
-            tbody tr td:nth-child(2)::before { content: "Item Name"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
-            tbody tr td:nth-child(3)::before { content: "Size"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
-            tbody tr td:nth-child(4)::before { content: "Price"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(1)::before { content: "Item Type *"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(2)::before { content: "Item Name *"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(3)::before { content: "Size *"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
+            tbody tr td:nth-child(4)::before { content: "Price *"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
             tbody tr td:nth-child(5)::before { content: "Extra Notes"; font-weight:600; display:block; margin-bottom:6px; color:#222; }
             /* Make inputs expand to full width for easy tapping */
             tbody tr td input, tbody tr td select, tbody tr td textarea {
@@ -181,22 +222,22 @@ Please note api.qrserver.com is a service offered for free by goQR.me
             <legend>User Details</legend>
             <div class="row">
                 <div class="col">
-                    <label for="lastname">Last Name</label>
-                    <input type="text" id="lastname" name="lastname" class="data-field">
+                    <label for="lastname">Last Name *</label>
+                    <input type="text" id="lastname" name="lastname" class="data-field" required>
                 </div>
                 <div class="col">
-                    <label for="firstname">First Name</label>
-                    <input type="text" id="firstname" name="firstname" class="data-field">
+                    <label for="firstname">First Name *</label>
+                    <input type="text" id="firstname" name="firstname" class="data-field" required>
                 </div>
             </div>
             <div class="row" style="margin-top:8px;">
                 <div class="col">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="data-field">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" class="data-field" required>
                 </div>
                 <div class="col">
-                    <label for="phone">Phone</label>
-                    <input type="tel" id="phone" name="phone" class="data-field">
+                    <label for="phone">Phone *</label>
+                    <input type="tel" id="phone" name="phone" class="data-field" required>
                 </div>
             </div>
         </fieldset>
@@ -205,7 +246,7 @@ Please note api.qrserver.com is a service offered for free by goQR.me
             <legend>Items (rows)</legend>
             <div class="table-responsive">
             <table aria-describedby="items-desc">
-                <caption id="items-desc" class="muted">Add items below. Use + Add Items to append more rows.</caption>
+                <caption id="items-desc" class="muted">Add items below. Use + Add Items to append more rows. <strong>Note:</strong> Boot sizes will accept any number including decimals (e.g., 26.5) when you select a boot type.</caption>
                 <colgroup>
                         <col style="width:12%"> <!-- Item Type -->
                         <col style="width:48%"> <!-- Item Name (wider) -->
@@ -216,33 +257,33 @@ Please note api.qrserver.com is a service offered for free by goQR.me
                 
                 <thead>
                     <tr>
-                        <th scope="col">Item Type</th>
-                        <th scope="col">Item Name</th>
-                        <th scope="col">Size</th>
-                        <th scope="col">Price</th>
+                        <th scope="col">Item Type *</th>
+                        <th scope="col">Item Name *</th>
+                        <th scope="col">Size *</th>
+                        <th scope="col">Price *</th>
                         <th scope="col">Extra Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- start with three blank rows -->
                     <tr>
-                        <td><select name="item1_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
-                        <td><input type="text" name="item1_name" class="data-field"></td>
-                        <td><input type="number" name="item1_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
-                        <td><input type="number" name="item1_price" step="0.01" min="0" class="data-field price-input"></td>
+                        <td><select name="item1_type" class="data-field item-type-dropdown" required><option value="">Select Type</option></select></td>
+                        <td><input type="text" name="item1_name" class="data-field" required></td>
+                        <td><input type="text" name="item1_size" class="data-field size-input" required></td>
+                        <td><input type="number" name="item1_price" step="0.01" min="0" class="data-field price-input" required></td>
                         <td><input type="text" name="item1_extraNotes" class="data-field"></td>
                     </tr>
                     <tr>
                         <td><select name="item2_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
                         <td><input type="text" name="item2_name" class="data-field"></td>
-                        <td><input type="number" name="item2_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="text" name="item2_size" class="data-field size-input"></td>
                         <td><input type="number" name="item2_price" step="0.01" min="0" class="data-field price-input"></td>
                         <td><input type="text" name="item2_extraNotes" class="data-field"></td>
                     </tr>
                     <tr>
                         <td><select name="item3_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
                         <td><input type="text" name="item3_name" class="data-field"></td>
-                        <td><input type="number" name="item3_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                        <td><input type="text" name="item3_size" class="data-field size-input"></td>
                         <td><input type="number" name="item3_price" step="0.01" min="0" class="data-field price-input"></td>
                         <td><input type="text" name="item3_extraNotes" class="data-field"></td>
                     </tr>
@@ -303,6 +344,103 @@ Please note api.qrserver.com is a service offered for free by goQR.me
             }
             populateAllDropdowns();
 
+            // Add event listeners to handle boot sizing
+            function addBootSizeValidation(root=document) {
+                root.querySelectorAll('.item-type-dropdown').forEach(dropdown => {
+                    dropdown.addEventListener('change', function() {
+                        const row = this.closest('tr');
+                        const sizeInput = row.querySelector('.size-input');
+                        const itemType = this.value;
+                        
+                        if (itemType.includes('Boot')) {
+                            // Convert to number input for boots to allow decimals
+                            if (sizeInput.tagName === 'SELECT' || sizeInput.type !== 'number') {
+                                const input = document.createElement('input');
+                                input.type = 'number';
+                                input.step = '0.5';
+                                input.min = '0';
+                                input.name = sizeInput.name;
+                                input.className = sizeInput.className;
+                                input.required = sizeInput.required;
+                                input.placeholder = 'e.g. 26.5';
+                                input.value = sizeInput.value;
+                                
+                                sizeInput.parentNode.replaceChild(input, sizeInput);
+                            }
+                        } else {
+                            // Convert back to text input for other items
+                            if (sizeInput.type === 'number' || sizeInput.tagName === 'SELECT') {
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.name = sizeInput.name;
+                                input.className = sizeInput.className;
+                                input.required = sizeInput.required;
+                                input.value = sizeInput.value;
+                                
+                                sizeInput.parentNode.replaceChild(input, sizeInput);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Add validation to existing rows
+            addBootSizeValidation();
+
+            // Add touched class to fields when user interacts with them
+            function addTouchedHandling(root=document) {
+                root.querySelectorAll('input[required], select[required]').forEach(field => {
+                    field.addEventListener('blur', function() {
+                        this.classList.add('touched');
+                        updateFieldErrorContainer(this);
+                    });
+                    field.addEventListener('input', function() {
+                        this.classList.add('touched');
+                        updateFieldErrorContainer(this);
+                    });
+                });
+            }
+            
+            // Function to update field validation styling without layout shift
+            function updateFieldErrorContainer(field) {
+                const wrapper = field.closest('.field-validation-wrapper');
+                if (!wrapper) return;
+                
+                const isInvalid = field.classList.contains('touched') && !field.validity.valid;
+                
+                // Toggle error class based on validity
+                if (isInvalid) {
+                    wrapper.classList.add('error');
+                } else {
+                    wrapper.classList.remove('error');
+                }
+            }
+            
+            // Create validation wrappers for all existing fields on page load
+            function createValidationWrappers(root=document) {
+                root.querySelectorAll('input[required], select[required]').forEach(field => {
+                    const label = document.querySelector(`label[for="${field.id}"]`);
+                    if (label && !field.closest('.field-validation-wrapper')) {
+                        // Create wrapper
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'field-validation-wrapper';
+                        
+                        // Insert wrapper before the label
+                        label.parentNode.insertBefore(wrapper, label);
+                        
+                        // Move label and field into wrapper
+                        wrapper.appendChild(label);
+                        wrapper.appendChild(field);
+                    }
+                });
+            }
+            
+            // Create wrappers for existing fields immediately
+            createValidationWrappers();
+            
+            // Add to existing fields
+            addTouchedHandling();
+
             let itemCounter = document.querySelectorAll('table tbody tr').length;
 
             function createItemRow(index){
@@ -310,11 +448,25 @@ Please note api.qrserver.com is a service offered for free by goQR.me
                     tr.innerHTML = `
                     <td><select name="item${index}_type" class="data-field item-type-dropdown"><option value="">Select Type</option></select></td>
                     <td><input type="text" name="item${index}_name" class="data-field"></td>
-                    <td><input type="number" name="item${index}_size" class="data-field size-input" inputmode="numeric" pattern="[0-9]*"></td>
+                    <td><input type="text" name="item${index}_size" class="data-field size-input"></td>
                     <td><input type="number" name="item${index}_price" step="0.01" min="0" class="data-field price-input"></td>
                     <td><input type="text" name="item${index}_extraNotes" class="data-field"></td>
                 `;
                 populateAllDropdowns(tr);
+                addBootSizeValidation(tr);
+                addTouchedHandling(tr);
+                
+                // Note: Table cell validation styling will be simpler since we can't easily wrap table cells
+                // We'll keep the existing validation for table fields
+                tr.querySelectorAll('input[required], select[required]').forEach(field => {
+                    field.addEventListener('blur', function() {
+                        this.classList.add('touched');
+                    });
+                    field.addEventListener('input', function() {
+                        this.classList.add('touched');
+                    });
+                });
+                
                 return tr;
             }
 
@@ -330,6 +482,28 @@ Please note api.qrserver.com is a service offered for free by goQR.me
             if (qrForm) {
                 qrForm.addEventListener('submit', function(ev){
                     ev.preventDefault();
+
+                    // Check if at least one item row is completely filled
+                    const rows = document.querySelectorAll('table tbody tr');
+                    let hasCompleteItem = false;
+                    
+                    rows.forEach(row => {
+                        const type = row.querySelector('[name*="_type"]').value;
+                        const name = row.querySelector('[name*="_name"]').value;
+                        const size = row.querySelector('[name*="_size"]').value;
+                        const price = row.querySelector('[name*="_price"]').value;
+                        
+                        if (type && name && size && price) {
+                            hasCompleteItem = true;
+                        }
+                    });
+                    
+                    if (!hasCompleteItem) {
+                        if (errorMessage) {
+                            errorMessage.textContent = 'Please complete at least one item (Type, Name, Size, and Price are required).';
+                        }
+                        return;
+                    }
 
                     // Debugging info (will not break page if elements missing)
                     console.log("Looking for elements...");
